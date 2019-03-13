@@ -9,6 +9,12 @@
   "author": "jake-shasteen",
   "license": "ISC",
   "dependencies": {
+    "babel-eslint": "^10.0.1",
+    "discord.js": "^11.4.2",
     "telnet-stream": "1.0.4"
+  },
+  "devDependencies": {
+    "eslint": "^5.15.1",
+    "prettier": "^1.16.4"
   }
 }
