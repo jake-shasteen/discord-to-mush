@@ -3,20 +3,10 @@ const net = require("net");
 const { TelnetSocket } = require("telnet-stream");
 const chalk = require("chalk");
 const Discord = require("discord.js");
-const client = new Discord.Client();
 
-const chunk = (string, chunkSize = 1000) => {
-  let index = 0;
-  const chunks = [];
-  while (index < string.length) {
-    chunks.push(string.substring(index, index + chunkSize));
-    index += chunkSize;
-  }
-  return chunks;
-};
+const chunk = require("./chunk");
 
-client.login(process.env.DISCORD_TOKEN);
-
+// Initialize MUSH connection
 const socket = net.createConnection(
   process.env.MUSH_PORT,
   process.env.MUSH_HOST
@@ -24,21 +14,28 @@ const socket = net.createConnection(
 
 const tSocket = new TelnetSocket(socket);
 
+// Initialize Discord connection
+const client = new Discord.Client();
+
+// Add listeners
 tSocket.on("close", () => process.exit());
 
 client.once("ready", () => {
   client.channels.get(process.env.BOT_CHANNEL_ID).send("Starting up.");
   tSocket.on("data", buffer => {
     const outString = buffer.toString("utf-8");
-    const channelPattern = /^\[(.+)\] (.+)/gi;
-    const chunks = outString.length > 2000 ? chunk(outString) : [outString];
 
-    chunks.forEach(chunk => {
+    // Send to bot's main channel
+    const chunks = outString.length > 2000 ? chunk(outString) : [outString];
+    chunks.forEach(chunkedString => {
       client.channels
         .get(process.env.BOT_CHANNEL_ID)
-        .send(chunk)
-        .catch(e => console.log(e));
+        .send(chunkedString)
+        .catch(e => console.log(e, "\nchunkedString:", chunkedString));
     });
+
+    // If it's a message from a channel on the MUSH, try to send to corresponding discord channel
+    const channelPattern = /^\[(.+)\] (.+)/gi;
     const channelMatch = channelPattern.exec(outString);
     try {
       channelMatch &&
@@ -61,12 +58,23 @@ client.once("ready", () => {
       );
     }
 
+    // Also send output to terminal
     process.stdout.write(outString);
   });
 });
 
+// Listen to input into terminal window, act as a telnet client
 process.stdin.on("data", buffer => tSocket.write(buffer.toString("utf-8")));
 
+// Forward channel messages to MUSH
+client.on("message", message => {
+  if (message.author.bot) return;
+  if (message.channel.name.substring(0, 3) === "bot") {
+    tSocket.write(`+${message.channel.name.substring(4, 7)} ${message}`);
+  }
+});
+
+// Connect to MUSH
 const connectString = Buffer.from(
   `connect ${process.env.MUSH_CHARACTER_NAME} ${
     process.env.MUSH_CHARACTER_PASSWORD
@@ -77,14 +85,5 @@ const connectString = Buffer.from(
 tSocket.write(connectString);
 tSocket.write("\n");
 
-function exitHandler(options, exitCode) {
-  if (options.cleanup) console.log("clean");
-  if (exitCode || exitCode === 0) console.log(exitCode);
-  client.channels.get(process.env.BOT_CHANNEL_ID).send("Shutting down.");
-  if (options.exit) process.exit();
-}
-
-process.on("SIGINT", exitHandler.bind(null, { exit: true }));
-process.on("SIGUSR1", exitHandler.bind(null, { exit: true }));
-process.on("SIGUSR2", exitHandler.bind(null, { exit: true }));
-process.on("uncaughtException", exitHandler.bind(null, { exit: true }));
+// Connect to Discord
+client.login(process.env.DISCORD_TOKEN);
