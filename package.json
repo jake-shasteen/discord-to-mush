@@ -4,6 +4,7 @@
   "description": "A bot for discord for the modern nights mush",
   "main": "index.js",
   "scripts": {
+    "start": "./start.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "jake-shasteen",
