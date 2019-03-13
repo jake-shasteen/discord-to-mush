@@ -30,7 +30,7 @@ client.once("ready", () => {
   client.channels.get(process.env.BOT_CHANNEL_ID).send("Starting up.");
   tSocket.on("data", buffer => {
     const outString = buffer.toString("utf-8");
-    const channelPattern = /^\[(.+)\] (.+)$/gi;
+    const channelPattern = /^\[(.+)\] (.+)/gi;
     const chunks = outString.length > 2000 ? chunk(outString) : [outString];
 
     chunks.forEach(chunk => {
