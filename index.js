@@ -39,6 +39,10 @@ client.once("ready", () => {
     const channelMatch = channelPattern.exec(outString);
     try {
       channelMatch &&
+        channelMatch[2] &&
+        !channelMatch[2]
+          .toLowerCase()
+          .startsWith(process.env.MUSH_CHARACTER_NAME) &&
         client.channels
           .find(
             channel =>
