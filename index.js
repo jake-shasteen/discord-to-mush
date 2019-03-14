@@ -70,7 +70,14 @@ process.stdin.on("data", buffer => tSocket.write(buffer.toString("utf-8")));
 client.on("message", message => {
   if (message.author.bot) return;
   if (message.channel.name.substring(0, 3) === "bot") {
-    tSocket.write(`+${message.channel.name.substring(4, 7)} ${message}`);
+    tSocket.write(
+      Buffer.from(
+        `+${message.channel.name.substring(4, 7)} ${
+          message.member.displayName
+        }: ${message}`,
+        "utf-8"
+      )
+    );
   }
 });
 
