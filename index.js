@@ -78,6 +78,7 @@ client.on("message", message => {
         "utf-8"
       )
     );
+    tSocket.write("\n");
   }
 });
 
