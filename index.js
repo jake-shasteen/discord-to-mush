@@ -28,10 +28,11 @@ client.once("ready", () => {
     // Send to bot's main channel
     const chunks = outString.length > 2000 ? chunk(outString) : [outString];
     chunks.forEach(chunkedString => {
-      client.channels
-        .get(process.env.BOT_CHANNEL_ID)
-        .send(chunkedString)
-        .catch(e => console.log(e, "\nchunkedString:", chunkedString));
+      if (chunkedString === "")
+        client.channels
+          .get(process.env.BOT_CHANNEL_ID)
+          .send(chunkedString)
+          .catch(e => console.log(e, "\nchunkedString:", chunkedString));
     });
 
     // If it's a message from a channel on the MUSH, try to send to corresponding discord channel
@@ -43,9 +44,7 @@ client.once("ready", () => {
         !channelMatch[2]
           .toLowerCase()
           .startsWith(process.env.MUSH_CHARACTER_NAME) &&
-          && !channelMatch[2]
-          .toLowerCase()
-          .startsWith('From Discord')
+        !channelMatch[2].toLowerCase().startsWith("From Discord") &&
         client.channels
           .find(
             channel =>
@@ -79,10 +78,7 @@ client.on("message", message => {
   if (message.channel.name.substring(0, 4) === "bot-") {
     tSocket.write(
       Buffer.from(
-        `@cemit/noisy ${message.channel.name.substring(
-          4,
-          7
-        )}=From Discord: ${
+        `@cemit/noisy ${message.channel.name.substring(4, 7)}=From Discord: ${
           message.member.displayName
         } says, "${message.content.replace(/\n/gi, "%r")}"`,
         "utf-8"
