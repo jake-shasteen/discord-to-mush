@@ -43,6 +43,9 @@ client.once("ready", () => {
         !channelMatch[2]
           .toLowerCase()
           .startsWith(process.env.MUSH_CHARACTER_NAME) &&
+          && !channelMatch[2]
+          .toLowerCase()
+          .startsWith('From Discord')
         client.channels
           .find(
             channel =>
@@ -73,12 +76,15 @@ process.stdin.on("data", buffer => tSocket.write(buffer.toString("utf-8")));
 // Forward channel messages to MUSH
 client.on("message", message => {
   if (message.author.bot) return;
-  if (message.channel.name.substring(0, 3) === "bot") {
+  if (message.channel.name.substring(0, 4) === "bot-") {
     tSocket.write(
       Buffer.from(
-        `+${message.channel.name.substring(4, 7)} ${
+        `@cemit/noisy ${message.channel.name.substring(
+          4,
+          7
+        )}=From Discord: ${
           message.member.displayName
-        }: ${message.content.replace(/\n/gi, "%r")}`,
+        } says, "${message.content.replace(/\n/gi, "%r")}"`,
         "utf-8"
       )
     );
