@@ -78,7 +78,7 @@ client.on("message", message => {
       Buffer.from(
         `+${message.channel.name.substring(4, 7)} ${
           message.member.displayName
-        }: ${message.replace(/\n/gi, "%r")}`,
+        }: ${message.content.replace(/\n/gi, "%r")}`,
         "utf-8"
       )
     );
