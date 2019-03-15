@@ -44,7 +44,7 @@ client.once("ready", () => {
         !channelMatch[2]
           .toLowerCase()
           .startsWith(process.env.MUSH_CHARACTER_NAME) &&
-        !channelMatch[2].toLowerCase().startsWith("From Discord") &&
+        !channelMatch[2].startsWith("From Discord") &&
         client.channels
           .find(
             channel =>
