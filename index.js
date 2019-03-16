@@ -28,11 +28,12 @@ client.once("ready", () => {
     // Send to bot's main channel
     const chunks = outString.length > 2000 ? chunk(outString) : [outString];
     chunks.forEach(chunkedString => {
-      if (chunkedString === "")
+      if (chunkedString !== "\n\r") {
         client.channels
           .get(process.env.BOT_CHANNEL_ID)
           .send(chunkedString)
           .catch(e => console.log(e, "\nchunkedString:", chunkedString));
+      }
     });
 
     // If it's a message from a channel on the MUSH, try to send to corresponding discord channel
