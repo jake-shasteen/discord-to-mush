@@ -81,7 +81,9 @@ client.on("message", message => {
       Buffer.from(
         `@cemit/noisy ${message.channel.name.substring(4, 7)}=From Discord: ${
           message.member.displayName
-        } says, "${message.content.replace(/\n/gi, "%r")}"`,
+        } says, "${message.content
+          .replace(/\n/gi, "%r")
+          .replace(/\(|\[|\]|\)/g, "")}"`,
         "utf-8"
       )
     );
