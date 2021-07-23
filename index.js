@@ -33,7 +33,7 @@ client.once("ready", () => {
     // Send to bot's main channel
     const chunks = outString.length > 2000 ? chunk(outString) : [outString];
     chunks.forEach((chunkedString) => {
-      if (chunkedString !== "\n\r") {
+      if (chunkedString !== "\n\r" && chunkedString != "\r\n") {
         client.channels
           .fetch(process.env.BOT_CHANNEL_ID)
           .then((channel) => channel.send(chunkedString))
