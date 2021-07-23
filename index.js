@@ -113,7 +113,7 @@ client.on("guildMemberRemove", (member) => {
   console.log("Member is leaving:");
   console.log(member);
   try {
-    client.channels
+    client.channels.cache
       .find((channel) => channel.name === "ignoreme")
       .send(`${member.displayName} has left the discord.`)
       .catch((e) => console.log(e));
