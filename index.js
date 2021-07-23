@@ -16,7 +16,11 @@ const socket = net.createConnection(
 
 const tSocket = new TelnetSocket(socket);
 
-const intents = new Intents(["GUILDS", "GUILD_MEMBERS", "GUILD_MESSAGES"]);
+const intents = new Discord.Intents([
+  "GUILDS",
+  "GUILD_MEMBERS",
+  "GUILD_MESSAGES",
+]);
 
 // Initialize Discord connection
 const client = new Discord.Client({
