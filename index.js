@@ -6,6 +6,8 @@ const Discord = require("discord.js");
 
 const chunk = require("./chunk");
 
+const channelPrefix = process.env.CHANNEL_PREFIX || "bot-";
+
 // Initialize MUSH connection
 const socket = net.createConnection(
   process.env.MUSH_PORT,
@@ -21,20 +23,21 @@ const client = new Discord.Client();
 tSocket.on("close", () => process.exit());
 
 client.once("ready", () => {
-  client.channels.fetch(process.env.BOT_CHANNEL_ID)
-	.then(channel => channel.send("Starting up."))
-	.catch(console.error);
-  tSocket.on("data", buffer => {
+  client.channels
+    .fetch(process.env.BOT_CHANNEL_ID)
+    .then((channel) => channel.send("Starting up."))
+    .catch(console.error);
+  tSocket.on("data", (buffer) => {
     const outString = buffer.toString("utf-8");
 
     // Send to bot's main channel
     const chunks = outString.length > 2000 ? chunk(outString) : [outString];
-    chunks.forEach(chunkedString => {
+    chunks.forEach((chunkedString) => {
       if (chunkedString !== "\n\r") {
         client.channels
           .fetch(process.env.BOT_CHANNEL_ID)
-          .then(channel => channel.send(chunkedString))
-          .catch(e => console.log(e, "\nchunkedString:", chunkedString));
+          .then((channel) => channel.send(chunkedString))
+          .catch((e) => console.log(e, "\nchunkedString:", chunkedString));
       }
     });
 
@@ -48,22 +51,22 @@ client.once("ready", () => {
           .toLowerCase()
           .startsWith(process.env.MUSH_CHARACTER_NAME) &&
         !channelMatch[2].startsWith("From Discord") &&
-        client.channels
-          .cache
+        client.channels.cache
           .find(
-            channel =>
+            (channel) =>
               channel.name ===
-              `bot-${channelMatch[1]
+              `${channelPrefix}${channelMatch[1]
                 .split(" ")
                 .join("-")
                 .toLowerCase()}`
           )
           .send(channelMatch[0])
-          .catch(e => console.log(e));
+          .catch((e) => console.log(e));
     } catch (e) {
       console.log(
         "failed to send to channel",
-        channelMatch && `bot-${channelMatch[1].split(" ").join("-")}`,
+        channelMatch &&
+          `${channelPrefix}${channelMatch[1].split(" ").join("-")}`,
         e
       );
     }
@@ -74,18 +77,20 @@ client.once("ready", () => {
 });
 
 // Listen to input into terminal window, act as a telnet client
-process.stdin.on("data", buffer => tSocket.write(buffer.toString("utf-8")));
+process.stdin.on("data", (buffer) => tSocket.write(buffer.toString("utf-8")));
 
 // Forward channel messages to MUSH
-client.on("message", message => {
+client.on("message", (message) => {
   if (message.author.bot) return;
-  if (message.channel.name.substring(0, 4) === "bot-") {
-    let author=message.member ? message.member.displayName : message.author;
+
+  if (message.channel.name.substring(0, 4) === channelPrefix) {
+    let author = message.member ? message.member.displayName : message.author;
     tSocket.write(
       Buffer.from(
-        `@cemit/noisy ${message.channel.name.substring(4, 7)}=From Discord: ${
-          author
-        } says, "${message.content
+        `@cemit/noisy ${message.channel.name.substring(
+          4,
+          7
+        )}=From Discord: ${author} says, "${message.content
           .replace(/\n/gi, "%r")
           .replace(/\(|\[|\]|\)/g, "")}"`,
         "utf-8"
@@ -97,9 +102,7 @@ client.on("message", message => {
 
 // Connect to MUSH
 const connectString = Buffer.from(
-  `connect ${process.env.MUSH_CHARACTER_NAME} ${
-    process.env.MUSH_CHARACTER_PASSWORD
-  }`,
+  `connect ${process.env.MUSH_CHARACTER_NAME} ${process.env.MUSH_CHARACTER_PASSWORD}`,
   "utf-8"
 );
 
