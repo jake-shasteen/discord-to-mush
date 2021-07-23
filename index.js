@@ -100,6 +100,18 @@ client.on("message", (message) => {
   }
 });
 
+// Send notifications when people leave the discord.
+client.on("guildMemberRemove", (member) => {
+  try {
+    client.channels
+      .find((channel) => channel.name === "ignoreme")
+      .send(`${member.displayName} has left the discord.`)
+      .catch((e) => console.log(e));
+  } catch (e) {
+    console.log("Failed to log member leaving", e);
+  }
+});
+
 // Connect to MUSH
 const connectString = Buffer.from(
   `connect ${process.env.MUSH_CHARACTER_NAME} ${process.env.MUSH_CHARACTER_PASSWORD}`,
