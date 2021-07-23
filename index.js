@@ -21,7 +21,9 @@ const client = new Discord.Client();
 tSocket.on("close", () => process.exit());
 
 client.once("ready", () => {
-  client.channels.get(process.env.BOT_CHANNEL_ID).send("Starting up.");
+  client.channels.fetch(process.env.BOT_CHANNEL_ID)
+	.then(channel => channel.send("Starting up."))
+	.catch(console.error);
   tSocket.on("data", buffer => {
     const outString = buffer.toString("utf-8");
 
@@ -30,8 +32,8 @@ client.once("ready", () => {
     chunks.forEach(chunkedString => {
       if (chunkedString !== "\n\r") {
         client.channels
-          .get(process.env.BOT_CHANNEL_ID)
-          .send(chunkedString)
+          .fetch(process.env.BOT_CHANNEL_ID)
+          .then(channel => channel.send(chunkedString))
           .catch(e => console.log(e, "\nchunkedString:", chunkedString));
       }
     });
@@ -47,6 +49,7 @@ client.once("ready", () => {
           .startsWith(process.env.MUSH_CHARACTER_NAME) &&
         !channelMatch[2].startsWith("From Discord") &&
         client.channels
+          .cache
           .find(
             channel =>
               channel.name ===
@@ -77,10 +80,11 @@ process.stdin.on("data", buffer => tSocket.write(buffer.toString("utf-8")));
 client.on("message", message => {
   if (message.author.bot) return;
   if (message.channel.name.substring(0, 4) === "bot-") {
+    let author=message.member ? message.member.displayName : message.author;
     tSocket.write(
       Buffer.from(
         `@cemit/noisy ${message.channel.name.substring(4, 7)}=From Discord: ${
-          message.member.displayName
+          author
         } says, "${message.content
           .replace(/\n/gi, "%r")
           .replace(/\(|\[|\]|\)/g, "")}"`,
