@@ -16,8 +16,12 @@ const socket = net.createConnection(
 
 const tSocket = new TelnetSocket(socket);
 
+const intents = new Intents(["GUILDS", "GUILD_MEMBERS", "GUILD_MESSAGES"]);
+
 // Initialize Discord connection
-const client = new Discord.Client();
+const client = new Discord.Client({
+  ws: { intents: intents },
+});
 
 // Add listeners
 tSocket.on("close", () => process.exit());
@@ -102,6 +106,8 @@ client.on("message", (message) => {
 
 // Send notifications when people leave the discord.
 client.on("guildMemberRemove", (member) => {
+  console.log("Member is leaving:");
+  console.log(member);
   try {
     client.channels
       .find((channel) => channel.name === "ignoreme")
