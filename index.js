@@ -93,6 +93,16 @@ client.on("message", (message) => {
 
   if (message.channel.name.substring(0, 4) === channelPrefix) {
     let author = message.member ? message.member.displayName : message.author;
+   
+    let attachmentURLs = message.attachments.mapValues(attachment => attachment.proxyURL).values(); 
+
+    let attachmentMessage = "";
+
+    for (const val of attachmentURLs) {
+      attachmentMessage += ` | ${val}`;
+    }
+
+	
     tSocket.write(
       Buffer.from(
         `@cemit/noisy ${message.channel.name.substring(
@@ -100,7 +110,7 @@ client.on("message", (message) => {
           7
         )}=From Discord: ${author} says, "${message.content
           .replace(/\n/gi, "%r")
-          .replace(/\(|\[|\]|\)/g, "")}"`,
+          .replace(/\(|\[|\]|\)/g, "")}${attachmentMessage}"`,
         "utf-8"
       )
     );
